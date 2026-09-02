@@ -7,6 +7,7 @@ import DaysView from './components/DaysView'
 import MonthsView from './components/MonthsView'
 import UnscheduledView from './components/UnscheduledView'
 import DoneView from './components/DoneView'
+import InstallPrompt from './components/InstallPrompt'
 
 const TABS = [
   { id: 'days', label: 'Days' },
@@ -24,9 +25,13 @@ export default function App() {
     return () => sub.subscription.unsubscribe()
   }, [])
 
-  if (session === undefined) return null
-  if (!session) return <Auth />
-  return <Shell user={session.user} />
+  if (session === undefined) return <InstallPrompt />
+  return (
+    <>
+      <InstallPrompt />
+      {session ? <Shell user={session.user} /> : <Auth />}
+    </>
+  )
 }
 
 function Shell({ user }) {
