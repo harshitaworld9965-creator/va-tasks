@@ -13,6 +13,7 @@ export default function UnscheduledView({ tasks, addTask, updateTask, deleteTask
     else updateTask(editing.id, fields)
     setEditing(null)
   }
+  const reschedule = (task, date) => updateTask(task.id, { due_date: date })
 
   return (
     <div>
@@ -30,7 +31,7 @@ export default function UnscheduledView({ tasks, addTask, updateTask, deleteTask
       <ul>
         {open.map((t) => editing?.id === t.id
           ? <li key={t.id} className="mb-2"><TaskForm initial={t} onSave={save} onCancel={() => setEditing(null)} /></li>
-          : <TaskRow key={t.id} task={t} onToggle={(x) => updateTask(x.id, { done: !x.done })} onEdit={setEditing} onDelete={(x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id)} />)}
+          : <TaskRow key={t.id} task={t} onToggle={(x) => updateTask(x.id, { done: !x.done })} onEdit={setEditing} onDelete={(x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id)} onReschedule={reschedule} />)}
       </ul>
 
       {done.length > 0 && (

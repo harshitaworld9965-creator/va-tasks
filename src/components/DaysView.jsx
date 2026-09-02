@@ -7,22 +7,30 @@ export default function DaysView({ tasks, addTask, updateTask, deleteTask }) {
   const [day, setDay] = useState(today())
   const [editing, setEditing] = useState(null)
   const strip = Array.from({ length: 9 }, (_, i) => addDays(day, i - 4))
+  const isToday = day === today()
 
   const dayTasks = tasks.filter((t) => t.due_date === day)
   const open = dayTasks.filter((t) => !t.done)
   const done = dayTasks.filter((t) => t.done)
-  const overdueCount = tasks.filter(isOverdue).length
-  const isToday = day === today()
+  // Overdue tasks roll onto today automatically until finished or rescheduled.
+  const carried = isToday ? tasks.filter((t) => !t.done && t.due_date && t.due_date < today()) : []
 
   function save(fields) {
     if (editing === 'new') addTask(fields)
     else updateTask(editing.id, fields)
     setEditing(null)
   }
+  const reschedule = (task, date) => updateTask(task.id, { due_date: date })
+  const rowProps = {
+    onToggle: (x) => updateTask(x.id, { done: !x.done }),
+    onEdit: setEditing,
+    onDelete: (x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id),
+    onReschedule: reschedule,
+  }
 
   return (
     <div>
-      {/* Hero — the loud, characteristic panel */}
+      {/* Hero */}
       <div className="bg-violet text-white rounded-3xl p-6 mb-5">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -35,15 +43,15 @@ export default function DaysView({ tasks, addTask, updateTask, deleteTask }) {
             <button onClick={() => setDay(today())} className="shrink-0 text-sm font-bold bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 transition-colors">Today</button>
           )}
         </div>
-        {isToday && overdueCount > 0 && (
+        {isToday && carried.length > 0 && (
           <div className="mt-4 flex items-center gap-2 bg-coral text-white font-bold text-sm rounded-xl px-3 py-2">
             <span className="text-base">⚠</span>
-            {overdueCount} task{overdueCount > 1 ? 's' : ''} slipped past — check the Months tab
+            {carried.length} unfinished task{carried.length > 1 ? 's' : ''} carried over — shown below
           </div>
         )}
       </div>
 
-      {/* Colored week strip */}
+      {/* Week strip */}
       <div className="flex items-center gap-1.5 mb-6 -mx-1 overflow-x-auto pb-1">
         <button onClick={() => setDay(addDays(day, -1))} aria-label="Previous day" className="shrink-0 w-8 h-9 rounded-xl hover:bg-violet-soft text-ink-2 font-bold">‹</button>
         {strip.map((k) => {
@@ -63,27 +71,39 @@ export default function DaysView({ tasks, addTask, updateTask, deleteTask }) {
         <button onClick={() => setDay(addDays(day, 1))} aria-label="Next day" className="shrink-0 w-8 h-9 rounded-xl hover:bg-violet-soft text-ink-2 font-bold">›</button>
       </div>
 
+      {/* Carried over — only on today */}
+      {carried.length > 0 && (
+        <div className="mb-5">
+          <h3 className="font-display text-sm font-bold text-coral-ink mb-2">Carried over from earlier days</h3>
+          <ul>
+            {carried.map((t) => editing?.id === t.id
+              ? <li key={t.id} className="mb-2"><TaskForm initial={t} onSave={save} onCancel={() => setEditing(null)} /></li>
+              : <TaskRow key={t.id} task={t} carried {...rowProps} />)}
+          </ul>
+        </div>
+      )}
+
       {editing === 'new'
         ? <div className="mb-4"><TaskForm defaultDate={day} onSave={save} onCancel={() => setEditing(null)} /></div>
         : <button onClick={() => setEditing('new')} className="w-full flex items-center gap-2 text-left font-semibold text-violet bg-violet-soft hover:bg-violet hover:text-white rounded-xl px-4 py-3 mb-4 transition-colors">
             <span className="text-lg leading-none">+</span> Add a task for this day
           </button>}
 
-      {dayTasks.length === 0 && editing !== 'new' && (
+      {dayTasks.length === 0 && carried.length === 0 && editing !== 'new' && (
         <p className="text-ink-3 font-medium text-sm py-10 text-center">Nothing planned yet. Add the first thing above.</p>
       )}
 
       <ul>
         {open.map((t) => editing?.id === t.id
           ? <li key={t.id} className="mb-2"><TaskForm initial={t} onSave={save} onCancel={() => setEditing(null)} /></li>
-          : <TaskRow key={t.id} task={t} onToggle={(x) => updateTask(x.id, { done: !x.done })} onEdit={setEditing} onDelete={(x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id)} />)}
+          : <TaskRow key={t.id} task={t} {...rowProps} />)}
       </ul>
 
       {done.length > 0 && (
         <details className="mt-3">
           <summary className="text-sm font-bold text-ink-2 cursor-pointer select-none py-1">Done ({done.length})</summary>
           <ul className="mt-2">
-            {done.map((t) => <TaskRow key={t.id} task={t} onToggle={(x) => updateTask(x.id, { done: !x.done })} onEdit={setEditing} onDelete={(x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id)} />)}
+            {done.map((t) => <TaskRow key={t.id} task={t} {...rowProps} />)}
           </ul>
         </details>
       )}

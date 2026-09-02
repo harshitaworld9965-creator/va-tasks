@@ -12,6 +12,7 @@ export default function MonthsView({ tasks, updateTask, deleteTask }) {
   const [editing, setEditing] = useState(null)
 
   function save(fields) { updateTask(editing.id, fields); setEditing(null) }
+  const reschedule = (task, date) => updateTask(task.id, { due_date: date })
 
   if (overdue.length === 0) return (
     <div>
@@ -46,7 +47,7 @@ export default function MonthsView({ tasks, updateTask, deleteTask }) {
                 <ul className="px-3 pb-3">
                   {list.map((t) => editing?.id === t.id
                     ? <li key={t.id} className="mb-2"><TaskForm initial={t} onSave={save} onCancel={() => setEditing(null)} /></li>
-                    : <TaskRow key={t.id} task={t} showDay onToggle={(x) => updateTask(x.id, { done: !x.done })} onEdit={setEditing} onDelete={(x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id)} />)}
+                    : <TaskRow key={t.id} task={t} showDay onToggle={(x) => updateTask(x.id, { done: !x.done })} onEdit={setEditing} onDelete={(x) => confirm(`Delete "${x.title}"?`) && deleteTask(x.id)} onReschedule={reschedule} />)}
                 </ul>
               )}
             </li>
