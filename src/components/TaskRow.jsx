@@ -39,8 +39,7 @@ export default function TaskRow({ task, showDay, carried, onToggle, onEdit, onDe
       </button>
 
       <button onClick={() => onEdit(task)} className="flex-1 min-w-0 text-left">
-        <span className={`text-[15px] leading-snug line-clamp-2 ${task.done ? 'line-through text-ink-2' : 'text-ink'}`}>{task.title}</span>
-        {(task.notes || showOrig) && (
+<span className={`block text-[15px] leading-snug break-words ${task.done ? 'line-through text-ink-2' : 'text-ink'}`}>{task.title}</span>        {(task.notes || showOrig) && (
           <span className="block text-xs text-ink-3 mt-0.5 truncate">
             {task.notes}{task.notes && showOrig && ' · '}{showOrig && `first planned ${shortDate(orig)}`}
           </span>
