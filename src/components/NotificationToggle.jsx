@@ -90,10 +90,10 @@ export default function NotificationToggle({ user }) {
 
   if (status === 'loading' || status === 'unsupported') return null
 
-  const base = 'text-xs font-semibold rounded-full px-3 py-1.5 transition-colors whitespace-nowrap'
+  const base = 'text-xs font-medium rounded-full px-3 py-1.5 transition-colors whitespace-nowrap'
 
   if (status === 'ios-install') return (
-    <button className={`${base} text-ink-2 bg-line/60 hover:bg-line`}
+    <button className={`${base} text-ink-2 border border-line hover:bg-line/50`}
       onClick={() => alert('To get reminders on iPhone: tap the Share button, choose "Add to Home Screen", then open Tasks from your home screen and tap this again.')}>
       🔔 Reminders
     </button>
@@ -107,14 +107,14 @@ export default function NotificationToggle({ user }) {
   )
 
   if (status === 'on') return (
-    <button onClick={disable} className={`${base} text-white bg-mint hover:opacity-90`}>
+    <button onClick={disable} className={`${base} text-[#0B7A5A] bg-mint-soft hover:opacity-80`}>
       🔔 Reminders on
     </button>
   )
 
   return (
     <button onClick={enable} disabled={status === 'busy'}
-      className={`${base} text-white bg-violet hover:bg-violet-2 disabled:opacity-60`}>
+      className={`${base} text-violet border border-violet/30 hover:bg-violet-soft disabled:opacity-60`}>
       {status === 'busy' ? '…' : '🔔 Turn on reminders'}
     </button>
   )
