@@ -8,6 +8,7 @@ import MonthsView from './components/MonthsView'
 import UnscheduledView from './components/UnscheduledView'
 import DoneView from './components/DoneView'
 import InstallPrompt from './components/InstallPrompt'
+import NotificationToggle from './components/NotificationToggle'
 
 const TABS = [
   { id: 'days', label: 'Days' },
@@ -46,9 +47,12 @@ function Shell({ user }) {
           <span className="w-7 h-7 rounded-lg bg-violet grid place-items-center text-white font-display font-extrabold text-sm">T</span>
           <span className="font-display font-extrabold tracking-tight text-lg">Tasks</span>
         </div>
-        <button onClick={() => supabase.auth.signOut()} className="text-sm font-semibold text-ink-2 hover:text-ink">
-          Sign out
-        </button>
+        <div className="flex items-center gap-3">
+          <NotificationToggle user={user} />
+          <button onClick={() => supabase.auth.signOut()} className="text-sm font-semibold text-ink-2 hover:text-ink">
+            Sign out
+          </button>
+        </div>
       </header>
 
       {/* Pill segmented tabs — fixed bottom on mobile, inline on desktop */}

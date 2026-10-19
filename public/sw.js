@@ -1,8 +1,8 @@
-// Minimal, update-friendly service worker.
+// Service worker: offline caching + reminder notifications.
 // Network-first for app files (so new deploys show immediately), cache as offline fallback.
 // Supabase API/auth calls are never cached — they always hit the network.
 
-const CACHE = 'tasks-shell-v1'
+const CACHE = 'tasks-shell-v2'
 
 self.addEventListener('install', (e) => {
   self.skipWaiting()
@@ -31,5 +31,41 @@ self.addEventListener('fetch', (e) => {
         return res
       })
       .catch(() => caches.match(request).then((r) => r || caches.match('/index.html')))
+  )
+})
+
+// ---- Reminders ----
+
+// A notification arrived from the server: show it.
+self.addEventListener('push', (e) => {
+  let data = {}
+  try {
+    data = e.data ? e.data.json() : {}
+  } catch {
+    data = { body: e.data ? e.data.text() : '' }
+  }
+
+  const title = data.title || 'Reminder'
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || '',
+      icon: '/icon-192.png',
+      tag: data.tag,            // same tag = replaces instead of stacking duplicates
+      data: { url: data.url || '/' },
+    })
+  )
+})
+
+// The notification was tapped: focus the app if it's open, otherwise open it.
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  const url = e.notification.data?.url || '/'
+
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((w) => 'focus' in w)
+      if (open) return open.focus()
+      return self.clients.openWindow(url)
+    })
   )
 })
